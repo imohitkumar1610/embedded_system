@@ -1,0 +1,254 @@
+#include<reg51.h>
+#include"serial.h"
+#include"LCD_header.h"
+#include<intrins.h>
+
+sbit h1=P1^0;
+sbit h2=P1^1;
+sbit h3=P1^2;
+sbit h4=P1^3;
+
+sbit v1=P1^4;
+sbit v2=P1^5;
+sbit v3=P1^6;
+sbit v4=P1^7;
+
+sbit m1=P2^1;
+sbit m2=P2^0;
+
+sbit bz=P3^6;
+
+
+unsigned char pos,sat;
+unsigned char id[12];
+
+ void intt () interrupt 4
+{
+  EA=0;
+  ES=0;
+
+	 for(pos=0;pos<12;pos++)
+	{
+		id[pos] = Rx_Character();
+		//WriteData(received_char);
+	}
+  sat=1;
+  EA=1;
+  ES=1;
+}
+
+
+
+void main(void)
+{ 	
+unsigned char received_char,wpw,tmp,pwl,pw[3],bal=4,bal1=3,sl;
+  sat=0;
+  bz=0;
+  EA=1;
+  ES=1;
+
+	Init_LCD();
+	Serial_Init();
+	WriteData(0x65);
+	WriteCommand(0x01);	PrintLCD("SWAP CARD");	 
+	while(1)
+	{
+	
+	if(sat)
+	{
+	WriteCommand(0x01);
+	for(pos=0;pos<12;pos++)
+	{	
+	WriteData(id[pos]);
+	}
+
+	if(id[9]=='8')
+		{
+		if(id[10]=='8')
+			{
+			if(id[11]=='8')
+				{
+				sl=1;
+				 WriteCommand(0x01);
+				 PrintLCD("PRATEEK");
+				 if(bal==4)
+				 PrintLCD(" 150");
+				 if(bal==3)
+				 PrintLCD(" 100");
+				 if(bal==2)
+				 PrintLCD(" 050");
+				 
+				 WriteCommand(0xc0);
+				 PrintLCD("PW:-");
+				 WriteCommand(0xc4);
+				 for(pwl=0;pwl<3;pwl++)
+				 {
+				 P1=0xff;
+				 h1=0;h2=0;h3=0;h4=0;
+				 v1=1;v2=1;v3=1;v4=1;
+
+				 while(v1&&v3);
+				  Delay();
+				 if(v1==0)
+				 {PrintLCD("*");pw[pwl]=1;}
+				 else if(v2==0)
+				 {PrintLCD("*");pw[pwl]=2;}
+				 else if(v3==0)
+				 {PrintLCD("*");pw[pwl]=3;}
+				 else if(v4==0)
+				 {PrintLCD("*");pw[pwl]=4;}
+				 else
+				 {PrintLCD("*");pw[pwl]=4;}
+				 while(~v1||~v3);
+				   Delay();Delay();Delay();Delay();Delay();
+					}
+				 wpw=0;
+
+
+
+				 if(pw[0]==1)
+				 {_nop_();}
+				 else
+				 {wpw++;}
+				 if(pw[1]==1)
+				 {_nop_();}
+				 else
+				 {wpw++;}
+				 if(pw[2]==3)
+				 {_nop_();}
+				 else
+				 {wpw++;}
+
+				if(wpw==0)
+				{
+				bal--;
+				}
+
+				  }
+			}
+		}
+
+
+
+	   if(id[9]=='1')
+		{
+		if(id[10]=='C')
+			{
+			if(id[11]=='7')
+				{
+				sl=2;
+				 WriteCommand(0x01);
+				 PrintLCD("Arpana");
+				 if(bal1==4)
+				 PrintLCD(" 150");
+				 if(bal1==3)
+				 PrintLCD(" 100");
+				 if(bal1==2)
+				 PrintLCD(" 050");
+				 
+				 WriteCommand(0xc0);
+				 PrintLCD("PW:-");
+				 WriteCommand(0xc4);
+				 pwl=0;
+				 for(pwl=0;pwl<3;pwl++)
+				 {
+				 P1=0xff;
+				 h1=0;h2=0;h3=0;h4=0;
+				 v1=1;v2=1;v3=1;v4=1;
+
+				 while(v1&&v3);
+				 Delay();
+				 if(v1==0)
+				 {PrintLCD("*");pw[pwl]=1;}
+				 else if(v2==0)
+				 {PrintLCD("*");pw[pwl]=2;}
+				 else if(v3==0)
+				 {PrintLCD("*");pw[pwl]=3;}
+				 else if(v4==0)
+				 {PrintLCD("*");pw[pwl]=4;}
+				 else
+				 {PrintLCD("*");Delay();Delay();Delay();Delay();Delay();Delay();pw[pwl]=4;}
+				 while(~v1||~v3);
+				   Delay();Delay();Delay();Delay();Delay();
+					}
+				 wpw=0;
+
+
+				 if(pw[0]==1)
+				 {_nop_();}
+				 else
+				 {wpw++;}
+				 if(pw[1]==1)
+				 {_nop_();}
+				 else
+				 {wpw++;}
+				 if(pw[2]==1)
+				 {_nop_();}
+				 else
+				 {wpw++;}
+
+				if(wpw==0)
+				{
+				bal1--;
+				}
+
+				  }
+			}
+		}
+
+				 if(wpw==0)
+				 {
+				 if((bal>0)&&(sl==1)||((bal1>0)&&(sl==2)))
+				 {
+				 bz=1;
+				 m1=0;m2=1;Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 m1=0;m2=0;Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 m1=1;m2=0;Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 m1=0;m2=0;
+				 bz=0;
+				 }
+				 else
+				 {
+				 WriteCommand(0x01);PrintLCD("LOW BALLANCE");
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 m1=0;m2=0;
+				 }
+				 }
+				 else
+				 {
+				 WriteCommand(0x01);PrintLCD("WRONG PASSWORD");
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();Delay();
+				 m1=0;m2=0;
+				 }
+				// WriteData(wpw+48);
+
+			
+
+
+
+		
+	sat=0;WriteCommand(0x01);PrintLCD("SWAP CARD");
+	}
+//		received_char = Rx_Character();
+//		WriteData(received_char);
+	}
+}
